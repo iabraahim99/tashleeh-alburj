@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="تشليح البرج">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#14532d">
+<title>تشليح البرج</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--g:#16a34a;--gd:#14532d;--gl:#dcfce7;--gs:#f0fdf4;--r:#dc2626;--rl:#fee2e2;--bl:#2563eb;--bll:#dbeafe;--am:#d97706;--al:#fef3c7;--bg:#f0fdf4;--sur:#fff;--bor:#d1fae5;--txt:#0f172a;--mu:#64748b;--rad:14px;--sh:0 2px 8px rgba(22,163,74,.08);--hh:60px;--nh:64px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--txt);min-height:100dvh;overflow-x:hidden}
+.screen{display:none;min-height:100dvh}.screen.on{display:flex;flex-direction:column}
+/* LOADING */
+#loading{position:fixed;inset:0;background:linear-gradient(160deg,#14532d,#16a34a);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;transition:opacity .4s}
+#loading svg{width:64px;height:64px;fill:#fff;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.93)}}
+#loading p{color:rgba(255,255,255,.8);font-size:14px;font-weight:600}
+/* LOGIN */
+#sLogin{background:linear-gradient(160deg,#14532d 0%,#15803d 45%,#16a34a 100%);align-items:center;justify-content:center;padding:24px}
+.login-logo{text-align:center;margin-bottom:32px}
+.logo-box{width:80px;height:80px;background:rgba(255,255,255,.15);border-radius:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;border:1px solid rgba(255,255,255,.2)}
+.logo-box svg{width:44px;height:44px;fill:#fff}
+.login-logo h1{color:#fff;font-size:26px;font-weight:900}
+.login-logo p{color:rgba(255,255,255,.7);font-size:13px;margin-top:3px}
+.card{background:#fff;border-radius:20px;padding:26px 22px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.card h2{font-size:17px;font-weight:800;margin-bottom:18px}
+.step{display:none}.step.on{display:block}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.fg label{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px}
+.fg input,.fg select,.fg textarea{padding:11px 13px;border:2px solid var(--bor);border-radius:10px;font-size:14px;font-family:'Cairo',sans-serif;color:var(--txt);background:#fff;width:100%;transition:border .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--g)}
+.fg textarea{resize:vertical;min-height:68px}
+.btn{width:100%;background:var(--g);color:#fff;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;transition:background .2s;margin-bottom:8px}
+.btn:hover{background:var(--gd)}.btn:active{transform:scale(.99)}
+.btn.sec{background:var(--bg);color:var(--mu);border:1.5px solid var(--bor)}
+.btn.sec:hover{background:#e8f5e9}
+.otp-note{font-size:12px;color:var(--mu);text-align:center;margin-top:8px;line-height:1.6}
+.otp-note b{color:var(--g)}
+/* APP */
+#sApp{background:var(--bg)}
+.header{background:linear-gradient(135deg,#14532d,#16a34a);height:var(--hh);padding:0 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(22,163,74,.4)}
+.hlogo{display:flex;align-items:center;gap:10px}
+.hlogo svg{width:28px;height:28px;fill:#fff}
+.htitle{color:#fff;font-size:17px;font-weight:800}.hsub{color:rgba(255,255,255,.65);font-size:10px}
+.huser{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);padding:6px 10px;border-radius:10px;cursor:pointer}
+.huser-name{color:#fff;font-size:12px;font-weight:600}.huser-role{font-size:10px;color:rgba(255,255,255,.7)}
+.main{flex:1;max-width:900px;margin:0 auto;padding:16px 14px;padding-bottom:calc(var(--nh) + 16px);width:100%}
+.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nh);background:#fff;border-top:1px solid var(--bor);display:flex;box-shadow:0 -4px 20px rgba(22,163,74,.1);z-index:40;padding-bottom:env(safe-area-inset-bottom)}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--mu);font-size:10px;font-weight:600;font-family:'Cairo',sans-serif;border:none;background:none;padding:8px 4px}
+.ni svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ni.on{color:var(--g)}
+.page{display:none}.page.on{display:block}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.stat{background:#fff;border-radius:var(--rad);border:1px solid var(--bor);padding:14px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;right:0;width:4px;height:100%;background:var(--g);border-radius:0 var(--rad) var(--rad) 0}
+.stat.red::before{background:var(--r)}.stat.blue::before{background:var(--bl)}
+.stat-icon{font-size:20px;margin-bottom:6px}.stat-label{font-size:11px;color:var(--mu);font-weight:600;margin-bottom:3px}
+.stat-val{font-size:17px;font-weight:900}.stat-val.g{color:var(--g)}.stat-val.r{color:var(--r)}.stat-val.b{color:var(--bl)}
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}.tabs::-webkit-scrollbar{display:none}
+.tab{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid var(--bor);background:#fff;color:var(--mu);font-family:'Cairo',sans-serif;transition:all .2s;white-space:nowrap}
+.tab.on{background:var(--g);color:#fff;border-color:var(--g)}
+/* CAR CARD */
+.car-card{background:#fff;border-radius:var(--rad);border:1px solid var(--bor);margin-bottom:14px;box-shadow:var(--sh);overflow:hidden}
+.car-top{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-bottom:1px solid var(--bor);gap:10px}
+.car-badge{display:inline-flex;background:var(--g);color:#fff;font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;margin-bottom:5px}
+.car-name{font-size:16px;font-weight:800}.car-sub{font-size:12px;color:var(--mu);margin-top:2px}
+.car-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.ibtn{background:#fff;border:1.5px solid var(--bor);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;color:var(--mu);font-family:'Cairo',sans-serif;font-weight:600;white-space:nowrap;transition:all .15s}
+.ibtn:hover{background:var(--bg)}.ibtn.r{border-color:var(--r);color:var(--r)}.ibtn.r:hover{background:var(--rl)}
+.ibtn.g{border-color:var(--g);color:var(--gd)}.ibtn.g:hover{background:var(--gl)}
+.ibtn.b{border-color:var(--bl);color:var(--bl)}.ibtn.b:hover{background:var(--bll)}
+.badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px}
+.badge-a{background:var(--gl);color:var(--gd)}.badge-d{background:var(--rl);color:var(--r)}
+.car-kpis{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--bor)}
+.kpi{padding:11px 8px;text-align:center;border-left:1px solid var(--bor)}.kpi:last-child{border-left:none}
+.kpi-label{font-size:10px;color:var(--mu);font-weight:600;margin-bottom:3px}.kpi-val{font-size:14px;font-weight:800}
+.kpi-val.g{color:var(--g)}.kpi-val.r{color:var(--r)}
+.car-notes{font-size:12px;color:#92400e;padding:8px 16px;border-bottom:1px solid var(--bor);background:#fffbeb}
+/* SALES */
+.sales-area{padding:14px 16px}
+.sales-title{font-size:11px;font-weight:800;color:var(--mu);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.sale-item{border:1px solid var(--bor);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fafffe}
+.sale-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px}
+.sale-desc{font-size:13px;font-weight:700}.sale-price{font-size:14px;font-weight:900;color:var(--g)}
+.sale-meta{display:flex;flex-wrap:wrap;gap:5px;font-size:11px}
+.mtag{background:#f1f5f9;padding:2px 8px;border-radius:6px;font-weight:600;color:var(--mu)}
+.wbadge{padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700}
+.wa{background:var(--gl);color:var(--gd)}.we{background:var(--rl);color:var(--r)}.wn{background:#f1f5f9;color:var(--mu)}
+/* ADD SALE */
+.add-sale{background:linear-gradient(135deg,#f0fdf4,#f8fafc);border:1.5px solid var(--bor);border-radius:12px;padding:13px;margin-top:10px}
+.add-sale-title{font-size:11px;font-weight:800;color:var(--gd);margin-bottom:11px;text-transform:uppercase;letter-spacing:.5px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.fgrid .full{grid-column:1/-1}
+.fgi{display:flex;flex-direction:column;gap:4px}
+.fgi label{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.3px}
+.fgi input,.fgi select{padding:9px 10px;border:1.5px solid var(--bor);border-radius:8px;font-size:13px;font-family:'Cairo',sans-serif;background:#fff;color:var(--txt);width:100%}
+.fgi input:focus,.fgi select:focus{outline:none;border-color:var(--g)}
+/* FAB */
+.fab{position:fixed;bottom:calc(var(--nh)+16px);left:50%;transform:translateX(-50%);background:var(--g);color:#fff;border:none;border-radius:28px;padding:13px 26px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;box-shadow:0 8px 32px rgba(22,163,74,.3);display:flex;align-items:center;gap:8px;z-index:30;transition:all .2s}
+.fab.hidden{visibility:hidden;pointer-events:none}
+.fab:hover{background:var(--gd);transform:translateX(-50%) scale(1.03)}
+.fab svg{width:18px;height:18px;fill:#fff}
+.add-car-btn{width:100%;background:var(--g);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--sh)}
+.add-car-btn:hover{background:var(--gd)}
+.add-car-btn svg{width:20px;height:20px;fill:#fff}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:100;backdrop-filter:blur(4px);animation:oIn .2s ease}
+@keyframes oIn{from{opacity:0}to{opacity:1}}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:520px;max-height:90dvh;overflow-y:auto;animation:sUp .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes sUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:40px;height:4px;background:var(--bor);border-radius:2px;margin:0 auto 18px}
+.modal h2{font-size:17px;font-weight:800;margin-bottom:16px}
+.macts{display:flex;gap:10px;margin-top:16px}
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--nh)+16px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:11px 22px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;animation:tIn .3s ease;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap;max-width:90vw}
+@keyframes tIn{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--mu)}
+.empty-icon{font-size:52px;margin-bottom:12px}.empty h3{font-size:16px;font-weight:700;margin-bottom:6px;color:var(--txt)}
+/* REPORTS */
+.rep-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--bor);border-radius:10px;padding:12px 14px;margin-bottom:6px;box-shadow:var(--sh)}
+.rep-label{font-size:13px;font-weight:600}.rep-val{font-size:14px;font-weight:900}
+.rep-val.g{color:var(--g)}.rep-val.r{color:var(--r)}
+.rep-sec{margin-bottom:20px}.rep-sec h3{font-size:11px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+/* USERS */
+.ucard{background:#fff;border:1.5px solid var(--bor);border-radius:var(--rad);padding:13px 15px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);margin-bottom:8px}
+.uavatar{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.uavatar.admin{background:linear-gradient(135deg,#14532d,#16a34a)}.uavatar.staff{background:linear-gradient(135deg,#1e40af,#3b82f6)}
+.uinfo{flex:1}.uname{font-size:15px;font-weight:800}.umeta{font-size:12px;color:var(--mu);margin-top:2px}
+.rbadge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
+.rbadge.admin{background:var(--gl);color:var(--gd)}.rbadge.staff{background:var(--bll);color:var(--bl)}
+/* WARRANTY */
+.witem{background:#fff;border:1px solid var(--bor);border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
+.witem-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.admin-msg{background:var(--al);border:1px solid #fcd34d;border-radius:10px;padding:12px 14px;font-size:13px;color:#92400e;margin-bottom:12px}
+@media(min-width:600px){.stats{grid-template-columns:repeat(4,1fr)}.fgrid{grid-template-columns:1fr 1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg>
+  <p>تشليح البرج — جاري التحميل...</p>
+</div>
+
+<!-- LOGIN -->
+<div id="sLogin" class="screen">
+  <div class="login-logo">
+    <div class="logo-box"><svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg></div>
+    <h1 id="loginTitle">تشليح البرج</h1><p id="loginSub">منطقة القصيم — الرس</p>
+  </div>
+  <div class="card">
+    <h2 id="loginHead">👋 تسجيل الدخول</h2>
+    <div class="fg"><label id="lblUsername">اسم المستخدم</label><input id="usernameInput" type="text" placeholder="admin" autocomplete="username" dir="ltr"></div>
+    <div class="fg"><label id="lblPassword">كلمة المرور</label><input id="passwordInput" type="password" placeholder="••••" autocomplete="current-password" dir="ltr"></div>
+    <div id="loginErr" style="color:var(--r);font-size:13px;margin-bottom:10px;display:none">❌ <span id="loginErrTxt">اسم المستخدم أو كلمة المرور غير صحيحة</span></div>
+    <button class="btn" id="loginBtn" onclick="loginUser()">دخول ✓</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="sApp" class="screen">
+  <div class="header">
+    <div class="hlogo">
+      <svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg>
+      <div><div class="htitle" id="appTitle">تشليح البرج</div><div class="hsub" id="appSub">القصيم — الرس</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="cycleLang()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif" id="langBtn">🌐 AR</button>
+      <div class="huser" onclick="logout()">
+        <div><div class="huser-name" id="hName"></div><div class="huser-role" id="hRole"></div></div>
+        <span style="color:rgba(255,255,255,.7)">⇢</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page on" id="pHome">
+      <div class="stats" id="statsGrid"></div>
+      <button class="add-car-btn" onclick="openAddCar()">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        <span id="addCarTxt">سيارة جديدة</span>
+      </button>
+      <div style="font-size:15px;font-weight:800;margin-bottom:12px" id="carsTitle">السيارات</div>
+      <div class="tabs" id="carTabs">
+        <button class="tab on" onclick="switchTab('all',this)" id="tabAll">الكل</button>
+        <button class="tab" onclick="switchTab('active',this)" id="tabActive">نشطة</button>
+        <button class="tab" onclick="switchTab('done',this)" id="tabDone">منتهية</button>
+      </div>
+      <div id="carsList"></div>
+    </div>
+    <div class="page" id="pWarranty"><div style="font-size:15px;font-weight:800;margin-bottom:14px" id="pWarrantyTitle">🛡️ الضمانات</div><div id="warrantyList"></div></div>
+    <div class="page" id="pFreeSales"><div style="font-size:15px;font-weight:800;margin-bottom:14px" id="pFreeSalesTitle">🔧 مبيعات الورشة</div><div id="freeSalesContent"></div></div>
+    <div class="page" id="pReports"><div style="font-size:15px;font-weight:800;margin-bottom:14px" id="pReportsTitle">📊 التقارير</div><div id="reportsContent"></div></div>
+    <div class="page" id="pExpenses"><div style="font-size:15px;font-weight:800;margin-bottom:14px" id="pExpensesTitle">💸 المصاريف الإدارية</div><div id="expensesContent"></div></div>
+    <div class="page" id="pUsers"><div style="font-size:15px;font-weight:800;margin-bottom:14px" id="pUsersTitle">👥 الموظفون</div><div id="usersContent"></div></div>
+  </div>
+
+  <nav class="bnav">
+    <button class="ni on" id="navHome" onclick="nav('Home',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>الرئيسية</button>
+    <button class="ni" id="navWarranty" onclick="nav('Warranty',this)"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>الضمانات</button>
+    <button class="ni" id="navFreeSales" onclick="nav('FreeSales',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>الورشة</button>
+    <button class="ni" id="navExpenses" onclick="nav('Expenses',this)"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>المصاريف</button>
+    <button class="ni" id="navReports" onclick="nav('Reports',this)"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>التقارير</button>
+    <button class="ni" id="navUsers" onclick="nav('Users',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>الموظفون</button>
+  </nav>
+  <button class="fab" id="fabBtn" onclick="openAddCar()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>سيارة جديدة</button>
+</div>
+
+<div id="modalWrap"></div>
+<div id="toastWrap"></div>
+
+<script>
+const SURL='https://bndzsbgklknijfliyhaf.supabase.co';
+const SKEY='sb_publishable_siu6czmZ5xVcYGhqyd9jcQ_THz3bPNe';
+const sb=supabase.createClient(SURL,SKEY);
+
+let CU=null, cars=[], curTab='all';
+
+// ── LANGUAGES ──
+const LANGS={
+  ar:{
+    dir:'rtl', btnLang:'EN',
+    appTitle:'تشليح البرج', appSub:'القصيم — الرس',
+    login:'تسجيل الدخول', username:'اسم المستخدم', password:'كلمة المرور', enter:'دخول ✓',
+    wrongPass:'❌ اسم المستخدم أو كلمة المرور غير صحيحة',
+    home:'الرئيسية', warranty:'الضمانات', workshop:'الورشة',
+    expenses:'المصاريف', reports:'التقارير', users:'الموظفون',
+    admin:'👑 مشرف', staff:'🔧 موظف',
+    addCar:'سيارة جديدة', allCars:'السيارات',
+    all:'الكل', active:'نشطة', done:'منتهية',
+    noSales:'لا توجد مبيعات بعد', noCars:'لا توجد سيارات',
+    addFirst:'اضغط "سيارة جديدة" للإضافة',
+    newSale:'➕ تسجيل مبيعة جديدة',
+    partName:'اسم القطعة', salePrice:'سعر البيع (ر.س)',
+    laborCost:'شغل اليد (ر.س)', warrantyDays:'ضمان (أيام)',
+    techField:'الفني المسؤول', chooseTech:'-- اختر الفني --',
+    saveSale:'✓ تسجيل المبيعة', currency:'ر.س',
+    saleClosed:'السيارة منتهية',
+    purchasePrice:'سعر الشراء', carDate:'التاريخ',
+    profit:'الربح', loss:'الخسارة', parts:'عدد القطع', status:'الحالة',
+    totalSales:'المبيعات', laborTotal:'شغل اليد',
+    activeCar:'نشطة', doneCar:'منتهية',
+    returnBtn:'↩ إرجاع', returned:'مرتجع',
+    salePDF:'🧾 بيع', retPDF:'🧾 مرتجع',
+    warrantyActive:'ضمان: ', warrantyExpired:'انتهى الضمان', noWarranty:'بدون ضمان',
+    logoutConfirm:'تأكيد تسجيل الخروج؟',
+    adminOnly:'❌ المشرف فقط', adminOnlyReturn:'❌ المشرف فقط يقدر يرجع القطعة',
+    adminOnlyDel:'❌ المشرف فقط يحذف',
+    checking:'جاري التحقق...', enterCredentials:'أدخل اسم المستخدم وكلمة المرور ⚠️',
+    reportsAdminOnly:'⚠️ التقارير للمشرف فقط', usersAdminOnly:'⚠️ للمشرف فقط',
+    expensesAdminOnly:'⚠️ المصاريف للمشرف فقط',
+    totalLabel:'الإجمالي الكلي', activeLabel:'نشطة', closedLabel:'منتهية',
+    warrantyActive2:'✅ سارية', warrantyExpired2:'🔴 منتهية',
+    noWarrantyData:'لا توجد ضمانات', noWarrantyDesc:'سجّل مبيعات بضمان لتظهر هنا',
+    delCarConfirm:'حذف السيارة وكل مبيعاتها؟', delSaleConfirm:'حذف هذه المبيعة؟',
+    delExpConfirm:'حذف هذا المصروف؟', delFreeConfirm:'حذف هذه الخدمة؟',
+    retReasonLabel:'سبب الإرجاع', retReasonPH:'مثال: قطعة معطوبة، طلب العميل...',
+    retConfirm:'✓ تأكيد الإرجاع', cancel:'إلغاء',
+    savedOk:'تم إضافة السيارة ✅', saleOk:'تم تسجيل المبيعة ✅',
+    retOk:'تم تسجيل الإرجاع ✅', delOk:'تم الحذف',
+    expOk:'تم إضافة المصروف ✅', freeOk:'تم تسجيل الخدمة ✅',
+    pdfOk:'تم تصدير PDF ✅', editOk:'تم التعديل ✅', addStaffOk:'تم إضافة الموظف ✅',
+    enterBuyPrice:'أدخل سعر الشراء ⚠️', enterSalePrice:'أدخل سعر البيع ⚠️',
+    fillAll:'أكمل جميع الحقول ⚠️', fillFields:'أكمل الحقول ⚠️',
+    saving:'جاري الحفظ...',
+  },
+  en:{
+    dir:'ltr', btnLang:'HI',
+    appTitle:'Tashleeh Al-Burj', appSub:'Al-Qassim — Al-Rass',
+    login:'Login', username:'Username', password:'Password', enter:'Login ✓',
+    wrongPass:'❌ Wrong username or password',
+    home:'Home', warranty:'Warranty', workshop:'Workshop',
+    expenses:'Expenses', reports:'Reports', users:'Staff',
+    admin:'👑 Admin', staff:'🔧 Staff',
+    addCar:'New Vehicle', allCars:'Vehicles',
+    all:'All', active:'Active', done:'Closed',
+    noSales:'No sales recorded', noCars:'No vehicles',
+    addFirst:'Tap "New Vehicle" to add',
+    newSale:'➕ Register New Sale',
+    partName:'Part Name', salePrice:'Sale Price (SAR)',
+    laborCost:'Labor (SAR)', warrantyDays:'Warranty (days)',
+    techField:'Technician', chooseTech:'-- Select Technician --',
+    saveSale:'✓ Save Sale', currency:'SAR',
+    saleClosed:'Vehicle closed',
+    purchasePrice:'Purchase Price', carDate:'Date',
+    profit:'Profit', loss:'Loss', parts:'Parts', status:'Status',
+    totalSales:'Sales', laborTotal:'Labor',
+    activeCar:'Active', doneCar:'Closed',
+    returnBtn:'↩ Return', returned:'Returned',
+    salePDF:'🧾 Invoice', retPDF:'🧾 Return',
+    warrantyActive:'Warranty: ', warrantyExpired:'Expired', noWarranty:'No Warranty',
+    logoutConfirm:'Confirm logout?',
+    adminOnly:'❌ Admin only', adminOnlyReturn:'❌ Only admin can return parts',
+    adminOnlyDel:'❌ Only admin can delete',
+    checking:'Checking...', enterCredentials:'Enter username and password ⚠️',
+    reportsAdminOnly:'⚠️ Reports for admin only', usersAdminOnly:'⚠️ Admin only',
+    expensesAdminOnly:'⚠️ Expenses for admin only',
+    totalLabel:'Total', activeLabel:'Active', closedLabel:'Closed',
+    warrantyActive2:'✅ Active', warrantyExpired2:'🔴 Expired',
+    noWarrantyData:'No warranties', noWarrantyDesc:'Add sales with warranty to see them here',
+    delCarConfirm:'Delete this vehicle and all its sales?', delSaleConfirm:'Delete this sale?',
+    delExpConfirm:'Delete this expense?', delFreeConfirm:'Delete this service?',
+    retReasonLabel:'Return Reason', retReasonPH:'e.g. Defective part, customer request...',
+    retConfirm:'✓ Confirm Return', cancel:'Cancel',
+    savedOk:'Vehicle added ✅', saleOk:'Sale recorded ✅',
+    retOk:'Return recorded ✅', delOk:'Deleted',
+    expOk:'Expense added ✅', freeOk:'Service recorded ✅',
+    pdfOk:'PDF exported ✅', editOk:'Updated ✅', addStaffOk:'Staff added ✅',
+    enterBuyPrice:'Enter purchase price ⚠️', enterSalePrice:'Enter sale price ⚠️',
+    fillAll:'Fill all fields ⚠️', fillFields:'Fill required fields ⚠️',
+    saving:'Saving...',
+  },
+  hi:{
+    dir:'ltr', btnLang:'AR',
+    appTitle:'Tashleeh Al-Burj', appSub:'Al-Qassim — Al-Rass',
+    login:'लॉग इन', username:'उपयोगकर्ता नाम', password:'पासवर्ड', enter:'प्रवेश ✓',
+    wrongPass:'❌ गलत उपयोगकर्ता नाम या पासवर्ड',
+    home:'होम', warranty:'वारंटी', workshop:'वर्कशॉप',
+    expenses:'खर्चे', reports:'रिपोर्ट', users:'कर्मचारी',
+    admin:'👑 एडमिन', staff:'🔧 कर्मचारी',
+    addCar:'नई गाड़ी', allCars:'गाड़ियाँ',
+    all:'सभी', active:'सक्रिय', done:'बंद',
+    noSales:'कोई बिक्री नहीं', noCars:'कोई गाड़ी नहीं',
+    addFirst:'"नई गाड़ी" दबाएं',
+    newSale:'➕ नई बिक्री दर्ज करें',
+    partName:'पुर्जे का नाम', salePrice:'बिक्री मूल्य (SAR)',
+    laborCost:'मज़दूरी (SAR)', warrantyDays:'वारंटी (दिन)',
+    techField:'तकनीशियन', chooseTech:'-- तकनीशियन चुनें --',
+    saveSale:'✓ बिक्री सहेजें', currency:'SAR',
+    saleClosed:'गाड़ी बंद है',
+    purchasePrice:'खरीद मूल्य', carDate:'तारीख',
+    profit:'लाभ', loss:'हानि', parts:'पुर्जे', status:'स्थिति',
+    totalSales:'बिक्री', laborTotal:'मज़दूरी',
+    activeCar:'सक्रिय', doneCar:'बंद',
+    returnBtn:'↩ वापसी', returned:'वापस',
+    salePDF:'🧾 बिल', retPDF:'🧾 वापसी',
+    warrantyActive:'वारंटी: ', warrantyExpired:'समाप्त', noWarranty:'वारंटी नहीं',
+    logoutConfirm:'लॉग आउट करें?',
+    adminOnly:'❌ केवल एडमिन', adminOnlyReturn:'❌ केवल एडमिन वापसी कर सकता है',
+    adminOnlyDel:'❌ केवल एडमिन हटा सकता है',
+    checking:'जाँच हो रही है...', enterCredentials:'उपयोगकर्ता नाम और पासवर्ड दर्ज करें ⚠️',
+    reportsAdminOnly:'⚠️ रिपोर्ट केवल एडमिन के लिए', usersAdminOnly:'⚠️ केवल एडमिन',
+    expensesAdminOnly:'⚠️ खर्चे केवल एडमिन के लिए',
+    totalLabel:'कुल', activeLabel:'सक्रिय', closedLabel:'बंद',
+    warrantyActive2:'✅ सक्रिय', warrantyExpired2:'🔴 समाप्त',
+    noWarrantyData:'कोई वारंटी नहीं', noWarrantyDesc:'वारंटी के साथ बिक्री दर्ज करें',
+    delCarConfirm:'यह गाड़ी और सभी बिक्री हटाएं?', delSaleConfirm:'यह बिक्री हटाएं?',
+    delExpConfirm:'यह खर्चा हटाएं?', delFreeConfirm:'यह सेवा हटाएं?',
+    retReasonLabel:'वापसी का कारण', retReasonPH:'जैसे: खराब पुर्जा, ग्राहक का अनुरोध...',
+    retConfirm:'✓ वापसी की पुष्टि करें', cancel:'रद्द करें',
+    savedOk:'गाड़ी जोड़ी गई ✅', saleOk:'बिक्री दर्ज हुई ✅',
+    retOk:'वापसी दर्ज हुई ✅', delOk:'हटा दिया गया',
+    expOk:'खर्चा जोड़ा गया ✅', freeOk:'सेवा दर्ज हुई ✅',
+    pdfOk:'PDF तैयार ✅', editOk:'अपडेट हो गया ✅', addStaffOk:'कर्मचारी जोड़ा गया ✅',
+    enterBuyPrice:'खरीद मूल्य दर्ज करें ⚠️', enterSalePrice:'बिक्री मूल्य दर्ज करें ⚠️',
+    fillAll:'सभी फ़ील्ड भरें ⚠️', fillFields:'आवश्यक फ़ील्ड भरें ⚠️',
+    saving:'सहेजा जा रहा है...',
+  }
+};
+const langOrder=['ar','en','hi'];
+let curLang=localStorage.getItem('alburj_lang')||'ar';
+function T(key){return LANGS[curLang][key]||LANGS.ar[key]||key;}
+
+function applyLang(){
+  const L=LANGS[curLang];
+  // اتجاه الصفحة
+  document.documentElement.setAttribute('dir',L.dir);
+  document.documentElement.setAttribute('lang',curLang);
+
+  const set=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt;};
+
+  // هيدر
+  set('appTitle',L.appTitle); set('appSub',L.appSub); set('langBtn',L.btnLang);
+
+  // صفحة الدخول
+  set('loginTitle',L.appTitle); set('loginSub',L.appSub);
+  set('loginHead','👋 '+L.login);
+  set('lblUsername',L.username); set('lblPassword',L.password);
+  set('loginErrTxt',L.wrongPass.replace('❌ ',''));
+  set('loginBtn',L.enter);
+
+  // الرئيسية
+  set('addCarTxt',L.addCar);
+  set('carsTitle',L.allCars);
+  set('tabAll',L.all); set('tabActive',L.active); set('tabDone',L.done);
+
+  // nav
+  const navIds=['navHome','navWarranty','navFreeSales','navExpenses','navReports','navUsers'];
+  const navKeys=['home','warranty','workshop','expenses','reports','users'];
+  navIds.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el){const t=el.lastChild;if(t&&t.nodeType===3)t.textContent=L[navKeys[i]]||t.textContent;}
+  });
+
+  // زر سيارة جديدة في FAB
+  const fab=document.getElementById('fabBtn');
+  if(fab){const t=fab.lastChild;if(t&&t.nodeType===3)t.textContent=L.addCar;}
+
+  // page titles
+  set('pWarrantyTitle',L.warranty);
+  set('pFreeSalesTitle',L.workshop);
+  set('pReportsTitle',L.reports);
+  set('pExpensesTitle',L.expenses);
+  set('pUsersTitle',L.users);
+
+  // حفظ
+  localStorage.setItem('alburj_lang',curLang);
+
+  // إعادة رسم إذا مسجل دخول
+  if(CU) render();
+}
+
+function cycleLang(){
+  const idx=langOrder.indexOf(curLang);
+  curLang=langOrder[(idx+1)%langOrder.length];
+  applyLang();
+  toast(curLang==='ar'?'تم التغيير للعربية 🇸🇦':curLang==='en'?'Switched to English 🇬🇧':'हिंदी में बदला गया 🇮🇳');
+}
+
+// ── INIT ──
+const APP_VER = 'v3';
+async function init(){
+  // امسح الجلسة القديمة مرة واحدة فقط
+  if(localStorage.getItem('alburj_ver') !== APP_VER){
+    const ver = localStorage.getItem('alburj_ver');
+    localStorage.removeItem('alburj_session');
+    localStorage.setItem('alburj_ver', APP_VER);
+  }
+
+  try {
+    const saved=localStorage.getItem('alburj_session');
+    if(saved){
+      const session=JSON.parse(saved);
+      if(session && session.username){
+        const{data}=await sb.from('accounts').select('*').eq('id',session.id).single();
+        if(data){
+          CU={id:data.id,name:data.name,role:data.role,username:data.username};
+          localStorage.setItem('alburj_session',JSON.stringify(CU));
+          startApp();
+          return;
+        }
+      }
+      localStorage.removeItem('alburj_session');
+    }
+  } catch(e){ localStorage.removeItem('alburj_session'); }
+  hideLd();show('sLogin');
+}
+
+// ── LOGIN ──
+async function loginUser(){
+  const username=val('usernameInput').trim();
+  const password=val('passwordInput').trim();
+  if(!username||!password){toast(T('enterCredentials'));return;}
+  const btn=document.querySelector('#sLogin .btn');
+  btn.textContent=T('checking');btn.disabled=true;
+  document.getElementById('loginErr').style.display='none';
+  const{data,error}=await sb.from('accounts').select('*').eq('username',username).eq('password',password).single();
+  btn.textContent=T('enter');btn.disabled=false;
+  if(error||!data){document.getElementById('loginErr').style.display='block';return;}
+  CU={id:data.id,name:data.name,role:data.role,username:data.username};
+  localStorage.setItem('alburj_session',JSON.stringify(CU));
+  startApp();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('sLogin').classList.contains('on'))loginUser();
+});
+
+function startApp(){
+  hideLd(); hide('sLogin'); show('sApp');
+  document.getElementById('hName').textContent=CU.name;
+  document.getElementById('hRole').textContent=CU.role==='admin'?LANGS[curLang].admin:LANGS[curLang].staff;
+  applyLang();
+  document.getElementById('fabBtn').classList.remove('hidden');
+  if(CU.role!=='admin'){
+    document.getElementById('navUsers').style.display='none';
+    document.getElementById('navReports').style.display='none';
+    document.getElementById('navExpenses').style.display='none';
+  } else {
+    document.getElementById('navUsers').style.display='';
+    document.getElementById('navReports').style.display='';
+    document.getElementById('navExpenses').style.display='';
+  }
+  // تحميل قائمة الموظفين للفني
+  sb.from('accounts').select('*').then(({data})=>{ window._accounts=data||[]; });
+  loadCars();
+}
+
+// ── LOGOUT ──
+async function logout(){
+  if(!confirm('تأكيد تسجيل الخروج؟'))return;
+  CU=null;cars=[];
+  localStorage.removeItem('alburj_session');
+  hide('sApp');show('sLogin');
+  document.getElementById('usernameInput').value='';
+  document.getElementById('passwordInput').value='';
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('navUsers').style.display='';
+  document.getElementById('navReports').style.display='';
+}
+
+// ── DATA ──
+async function loadCars(){
+  const {data,error}=await sb.from('cars').select('*,sales(*)').order('num',{ascending:false});
+  if(error){toast('خطأ تحميل البيانات');return;}
+  cars=(data||[]).map(c=>({...c,sales:c.sales||[]}));
+  const{data:freeS}=await sb.from('free_sales').select('price');
+  const{data:exps}=await sb.from('expenses').select('amount');
+  const totFree=(freeS||[]).reduce((s,x)=>s+Number(x.price||0),0);
+  const totExp=(exps||[]).reduce((s,x)=>s+Number(x.amount||0),0);
+  render(totFree,totExp);
+}
+
+function calcCar(car){
+  const active=car.sales.filter(x=>!x.returned);
+  const s=active.reduce((a,x)=>a+Number(x.price||0),0);
+  const l=active.reduce((a,x)=>a+Number(x.labor||0),0);
+  // شغل اليد يبقى حتى لو رجعت القطعة (تعب فك وتركيب)
+  const laborReturned=car.sales.filter(x=>x.returned).reduce((a,x)=>a+Number(x.labor||0),0);
+  const returnedPrice=car.sales.filter(x=>x.returned).reduce((a,x)=>a+Number(x.price||0),0);
+  const totalLabor=l+laborReturned;
+  return{sales:s,labor:totalLabor,net:(s+totalLabor)-Number(car.buy_price||0),returned:returnedPrice};
+}
+
+function fmt(n){return Number(n||0).toLocaleString('ar-SA',{minimumFractionDigits:0,maximumFractionDigits:0})+' ر.س';}
+
+function wStatus(sale){
+  if(!sale.warranty_days||sale.warranty_days==0)return{label:'بدون ضمان',cls:'wn'};
+  const exp=new Date(new Date(sale.sale_date).getTime()+sale.warranty_days*86400000);
+  const diff=Math.ceil((exp-new Date())/86400000);
+  if(diff>0)return{label:'ضمان: '+diff+' يوم متبقي',cls:'wa',expiry:exp};
+  return{label:'انتهى الضمان',cls:'we',expiry:exp};
+}
+
+// ── RENDER ──
+function renderStats(totFree,totExp){
+  const isA=CU.role==='admin';
+  let tB=0,tS=0,tL=0;
+  cars.forEach(c=>{tB+=Number(c.buy_price||0);const r=calcCar(c);tS+=r.sales;tL+=r.labor;});
+  const totalSales=tS+tL+(totFree||0);
+  const net=totalSales-tB-(totExp||0);
+  const parts=cars.reduce((s,c)=>s+c.sales.filter(x=>!x.returned).length,0);
+  document.getElementById('statsGrid').innerHTML=isA?`
+    <div class="stat"><div class="stat-icon">🚗</div><div class="stat-label">السيارات</div><div class="stat-val b">${cars.length}</div></div>
+    <div class="stat"><div class="stat-icon">🛒</div><div class="stat-label">إجمالي الشراء</div><div class="stat-val">${fmt(tB)}</div></div>
+    <div class="stat"><div class="stat-icon">💰</div><div class="stat-label">المبيعات</div><div class="stat-val g">${fmt(totalSales)}</div></div>
+    <div class="stat ${net>=0?'':'red'}"><div class="stat-icon">${net>=0?'📈':'📉'}</div><div class="stat-label">${net>=0?'صافي الربح':'صافي الخسارة'}</div><div class="stat-val ${net>=0?'g':'r'}">${fmt(Math.abs(net))}</div></div>`
+  :`<div class="stat"><div class="stat-icon">🚗</div><div class="stat-label">السيارات</div><div class="stat-val b">${cars.length}</div></div>
+    <div class="stat"><div class="stat-icon">✅</div><div class="stat-label">نشطة</div><div class="stat-val g">${cars.filter(c=>!c.done).length}</div></div>
+    <div class="stat"><div class="stat-icon">🔩</div><div class="stat-label">القطع المباعة</div><div class="stat-val">${parts}</div></div>
+    <div class="stat red"><div class="stat-icon">🔴</div><div class="stat-label">منتهية</div><div class="stat-val r">${cars.filter(c=>c.done).length}</div></div>`;
+}
+
+function renderCars(){
+  const isA=CU.role==='admin';
+  let list=cars;
+  if(curTab==='active')list=cars.filter(c=>!c.done);
+  if(curTab==='done')list=cars.filter(c=>c.done);
+  if(!list.length){document.getElementById('carsList').innerHTML=`<div class="empty"><div class="empty-icon">🚗</div><h3>${T('noCars')}</h3><p>${T('addFirst')}</p></div>`;return;}
+
+  document.getElementById('carsList').innerHTML=list.map(car=>{
+    const{sales,labor,net}=calcCar(car);
+    const salesHTML=car.sales.length?car.sales.map((s,i)=>{
+      const ws=wStatus(s);
+      return `<div class="sale-item" style="${s.returned?'opacity:0.75;background:#fff5f5':''}">
+        <div class="sale-head">
+          <div class="sale-desc">${s.part_name||'-'}${s.returned?` <span style="color:var(--r);font-size:10px">(${T('returned')})</span>`:''}</div>
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+            <div class="sale-price" style="${s.returned?'text-decoration:line-through;color:var(--mu)':''}">${fmt(s.price)}</div>
+            <button class="ibtn b" style="padding:4px 8px;font-size:11px" onclick="exportSalePDF('${car.id}','${s.id}')">${T('salePDF')}</button>
+            ${s.returned?`<button class="ibtn r" style="padding:4px 8px;font-size:11px" onclick="exportReturnPDF('${car.id}','${s.id}','')">${T('retPDF')}</button>`:''}
+            ${isA&&!s.returned?`<button class="ibtn r" style="padding:4px 8px;font-size:10px" onclick="returnSale('${car.id}','${s.id}')">${T('returnBtn')}</button>`:''}
+            ${isA?`<button class="ibtn r" style="padding:4px 8px;font-size:11px" onclick="delSale('${car.id}','${s.id}')">✕</button>`:''}
+          </div>
+        </div>
+        <div class="sale-meta">
+          <span class="mtag">📅 ${new Date(s.sale_date).toLocaleDateString()}</span>
+          ${s.labor>0?`<span class="mtag">🔧 ${fmt(s.labor)}</span>`:''}
+          ${s.technician?`<span class="mtag">🛠️ ${s.technician}</span>`:''}
+          <span class="wbadge ${ws.cls}">${ws.label}</span>
+        </div>
+      </div>`;
+    }).join(''):`<div style="color:var(--mu);font-size:13px;padding:6px 0 10px">${T('noSales')}</div>`;
+
+    const kpis=isA?`<div class="car-kpis">
+      <div class="kpi"><div class="kpi-label">${T('totalSales')}</div><div class="kpi-val">${fmt(sales)}</div></div>
+      <div class="kpi"><div class="kpi-label">${T('laborTotal')}</div><div class="kpi-val">${fmt(labor)}</div></div>
+      <div class="kpi"><div class="kpi-label">${net>=0?T('profit'):T('loss')}</div><div class="kpi-val ${net>=0?'g':'r'}">${fmt(Math.abs(net))}</div></div>
+    </div>`:`<div class="car-kpis">
+      <div class="kpi"><div class="kpi-label">${T('parts')}</div><div class="kpi-val">${car.sales.filter(x=>!x.returned).length}</div></div>
+      <div class="kpi"><div class="kpi-label">${T('laborTotal')}</div><div class="kpi-val">${fmt(labor)}</div></div>
+      <div class="kpi"><div class="kpi-label">${T('status')}</div><div class="kpi-val ${car.done?'r':'g'}">${car.done?T('doneCar'):T('activeCar')}</div></div>
+    </div>`;
+
+    const carWord=curLang==='en'?'Car':curLang==='ur'?'گاڑی':'سيارة';
+    return `<div class="car-card" id="cc-${car.id}">
+      <div class="car-top">
+        <div>
+          <div class="car-badge">${carWord} #${car.num}</div>
+          <div class="car-name">${car.model||'-'}</div>
+          <div class="car-sub">${isA?T('purchasePrice')+': '+fmt(car.buy_price):'📅 '+new Date(car.created_at).toLocaleDateString()}</div>
+        </div>
+        <div class="car-acts">
+          <span class="badge ${car.done?'badge-d':'badge-a'}">${car.done?T('doneCar'):T('activeCar')}</span>
+          ${isA?`<button class="ibtn b" onclick="exportCarPDF('${car.id}')">🧾 PDF</button>`:''}
+          ${isA?`<button class="ibtn" onclick="toggleDone('${car.id}',${car.done})">${car.done?'↩':'✔'}</button>`:''}
+          ${isA?`<button class="ibtn r" onclick="delCar('${car.id}')">🗑</button>`:''}
+        </div>
+      </div>
+      ${car.notes?`<div class="car-notes">📝 ${car.notes}</div>`:''}
+      ${kpis}
+      <div class="sales-area">
+        <div class="sales-title">${T('newSale').replace('➕ ','')} (${car.sales.length})</div>
+        ${salesHTML}
+        ${!car.done?`<div class="add-sale">
+          <div class="add-sale-title">${T('newSale')}</div>
+          <div class="fgrid">
+            <div class="fgi full"><label>${T('partName')}</label><input type="text" id="d_${car.id}" placeholder="${curLang==='en'?'Engine, Door...':curLang==='ur'?'انجن، دروازہ...':'محرك، باب...'}"></div>
+            <div class="fgi"><label>${T('salePrice')}</label><input type="number" id="p_${car.id}" placeholder="0" min="0" inputmode="numeric"></div>
+            <div class="fgi"><label>${T('laborCost')}</label><input type="number" id="l_${car.id}" placeholder="0" min="0" inputmode="numeric"></div>
+            <div class="fgi"><label>${T('warrantyDays')}</label><input type="number" id="w_${car.id}" placeholder="0" min="0" inputmode="numeric"></div>
+            <div class="fgi full"><label>${T('techField')}</label>
+              <select id="t_${car.id}">
+                <option value="">${T('chooseTech')}</option>
+                ${(window._accounts||[]).map(a=>`<option value="${a.name}">${a.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <button class="btn" style="margin-bottom:0" onclick="addSale('${car.id}')">${T('saveSale')}</button>
+        </div>`:`<div style="color:var(--mu);font-size:12px;text-align:center;padding:6px 0">${T('saleClosed')}</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function render(totFree,totExp){renderStats(totFree,totExp);renderCars();}
+function switchTab(t,el){curTab=t;document.querySelectorAll('#carTabs .tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');renderCars();}
+
+// ── ACTIONS ──
+function openAddCar(){
+  modal(`<h2>🚗 إضافة سيارة جديدة</h2>
+    <div class="fg"><label>موديل السيارة</label><input id="m_model" type="text" placeholder="كامري 2019..."></div>
+    <div class="fg"><label>سعر الشراء (ر.س)</label><input id="m_price" type="number" placeholder="0" inputmode="numeric"></div>
+    <div class="fg"><label>ملاحظات (اختياري)</label><textarea id="m_notes" placeholder="ملاحظات..."></textarea></div>
+    <div class="macts"><button class="btn" style="margin-bottom:0" onclick="saveCar()">✓ حفظ</button><button class="btn sec" style="margin-bottom:0" onclick="closeModal()">${T('cancel')}</button></div>`);
+}
+
+async function saveCar(){
+  const model=val('m_model');
+  const price=parseFloat(document.getElementById('m_price').value)||0;
+  const notes=val('m_notes');
+  if(!price){toast(T('enterBuyPrice'));return;}
+  const btn=document.querySelector('.modal .btn');
+  if(btn){btn.textContent=T('saving');btn.disabled=true;}
+  const{data,error}=await sb.from('cars').insert({model,buy_price:price,notes}).select();
+  if(btn){btn.textContent=T('enter').replace(' ✓','')+'حفظ';btn.disabled=false;}
+  if(error){
+    console.error('saveCar error:',error);
+    toast('خطأ: '+error.message);
+    return;
+  }
+  closeModal();toast(T('savedOk'));loadCars();
+}
+
+async function addSale(carId){
+  const desc=document.getElementById('d_'+carId)?.value.trim();
+  const price=parseFloat(document.getElementById('p_'+carId)?.value)||0;
+  const labor=parseFloat(document.getElementById('l_'+carId)?.value)||0;
+  const wdays=parseInt(document.getElementById('w_'+carId)?.value)||0;
+  const technician=document.getElementById('t_'+carId)?.value||'';
+  if(!price){toast(T('enterSalePrice'));return;}
+  const{error}=await sb.from('sales').insert({
+    car_id:carId,part_name:desc||'قطعة',
+    price,labor,warranty_days:wdays,
+    technician,
+    sold_by:CU.name,sold_by_id:CU.id,
+    sale_date:new Date().toISOString(),
+    returned:false
+  });
+  if(error){toast('خطأ: '+error.message);return;}
+  toast(T('saleOk'));loadCars();
+}
+
+async function returnSale(carId,saleId){
+  if(CU.role!=='admin'){toast(T('adminOnlyReturn'));return;}
+  modal(`<h2>↩ ${T('returnBtn').replace('↩ ','')}</h2>
+    <div class="fg"><label>${T('retReasonLabel')}</label><input id="ret_reason" type="text" placeholder="${T('retReasonPH')}"></div>
+    <div class="macts">
+      <button class="btn" style="margin-bottom:0" onclick="confirmReturn('${carId}','${saleId}')">${T('retConfirm')}</button>
+      <button class="btn sec" style="margin-bottom:0" onclick="closeModal()">${T('cancel')}</button>
+    </div>`);
+}
+
+async function confirmReturn(carId,saleId){
+  const reason=val('ret_reason').trim()||'غير محدد';
+  const{error:e1}=await sb.from('sales').update({returned:true}).eq('id',saleId);
+  const{error:e2}=await sb.from('returns').insert({sale_id:saleId,car_id:carId,reason,returned_by:CU.name});
+  if(e1||e2){toast('Error returning part');return;}
+  closeModal();toast(T('retOk'));loadCars();
+  exportReturnPDF(carId,saleId,reason);
+}
+
+async function delSale(carId,saleId){
+  if(CU.role!=='admin'){toast(T('adminOnlyDel'));return;}
+  if(!confirm(T('delSaleConfirm')))return;
+  await sb.from('sales').delete().eq('id',saleId);
+  toast(T('delOk'));loadCars();
+}
+
+async function delCar(carId){
+  if(CU.role!=='admin'){toast(T('adminOnlyDel'));return;}
+  if(!confirm(T('delCarConfirm')))return;
+  await sb.from('sales').delete().eq('car_id',carId);
+  await sb.from('cars').delete().eq('id',carId);
+  toast(T('delOk'));loadCars();
+}
+
+async function toggleDone(carId,cur){
+  if(CU.role!=='admin'){toast(T('adminOnly'));return;}
+  await sb.from('cars').update({done:!cur}).eq('id',carId);
+  toast(!cur?T('doneCar')+' ✅':T('activeCar')+' ✅');loadCars();
+}
+
+// ── WARRANTY ──
+function renderWarranty(){
+  const all=[];
+  cars.forEach(car=>car.sales.forEach(s=>{if(s.warranty_days>0)all.push({car,sale:s,ws:wStatus(s)});}));
+  if(!all.length){document.getElementById('warrantyList').innerHTML=`<div class="empty"><div class="empty-icon">🛡️</div><h3>لا توجد ضمانات</h3><p>سجّل مبيعات بضمان لتظهر هنا</p></div>`;return;}
+  const active=all.filter(x=>x.ws.cls==='wa').sort((a,b)=>a.ws.expiry-b.ws.expiry);
+  const expired=all.filter(x=>x.ws.cls==='we');
+  let html='';
+  if(active.length){
+    html+=`<div class="rep-sec"><h3>✅ سارية (${active.length})</h3>`;
+    html+=active.map(x=>`<div class="witem"><div class="witem-head"><div><div style="font-size:13px;font-weight:700">${x.sale.part_name||'قطعة'}</div><div style="font-size:11px;color:var(--mu)">سيارة: ${x.car.model||'#'+x.car.num} | ${new Date(x.sale.sale_date).toLocaleDateString('ar-SA')}</div></div><span class="wbadge ${x.ws.cls}">${x.ws.label}</span></div><div style="font-size:11px;color:var(--mu)">💰 ${fmt(x.sale.price)}${x.sale.sold_by?' | 👤 '+x.sale.sold_by:''}</div></div>`).join('');
+    html+='</div>';
+  }
+  if(expired.length){
+    html+=`<div class="rep-sec"><h3>🔴 منتهية (${expired.length})</h3>`;
+    html+=expired.map(x=>`<div class="witem"><div class="witem-head"><div><div style="font-size:13px;font-weight:700">${x.sale.part_name||'قطعة'}</div><div style="font-size:11px;color:var(--mu)">سيارة: ${x.car.model||'#'+x.car.num}</div></div><span class="wbadge ${x.ws.cls}">${x.ws.label}</span></div></div>`).join('');
+    html+='</div>';
+  }
+  document.getElementById('warrantyList').innerHTML=html;
+}
+
+// ── REPORTS ──
+async function renderReports(){
+  if(CU.role!=='admin'){document.getElementById('reportsContent').innerHTML=`<div class="admin-msg">${T('reportsAdminOnly')}</div>`;return;}
+
+  let tB=0,tS=0,tL=0,best=null,bestN=-Infinity;const byU={};
+  cars.forEach(car=>{
+    tB+=Number(car.buy_price||0);
+    const r=calcCar(car);tS+=r.sales;tL+=r.labor;
+    if(r.net>bestN){bestN=r.net;best=car;}
+    car.sales.filter(s=>!s.returned).forEach(s=>{const u=s.sold_by||'غير محدد';byU[u]=(byU[u]||0)+Number(s.price||0);});
+  });
+
+  const{data:exps}=await sb.from('expenses').select('*');
+  const{data:freeS}=await sb.from('free_sales').select('*');
+  const totExp=(exps||[]).reduce((s,x)=>s+Number(x.amount||0),0);
+  const totFree=(freeS||[]).reduce((s,x)=>s+Number(x.price||0),0);
+
+  const grossNet=tS+tL+totFree-tB;
+  const netAfterExp=grossNet-totExp;
+
+  // حساب الأرباح حسب الفترة
+  function filterByDays(days){
+    const cutoff=new Date(Date.now()-days*86400000);
+    let s=0,l=0,f=0;
+    cars.forEach(car=>{
+      car.sales.filter(x=>!x.returned&&new Date(x.sale_date)>=cutoff).forEach(x=>{
+        s+=Number(x.price||0);
+        l+=Number(x.labor||0);
+      });
+    });
+    (freeS||[]).filter(x=>new Date(x.sale_date)>=cutoff).forEach(x=>{f+=Number(x.price||0);});
+    const exp=(exps||[]).filter(x=>new Date(x.created_at)>=cutoff).reduce((a,x)=>a+Number(x.amount||0),0);
+    return {net:s+l+f-exp};
+  }
+
+  const daily=filterByDays(1);
+  const weekly=filterByDays(7);
+  const monthly=filterByDays(30);
+  const yearly=filterByDays(365);
+
+  const expBycat={};
+  (exps||[]).forEach(x=>{expBycat[x.category]=(expBycat[x.category]||0)+Number(x.amount||0);});
+  const cats2={salary:'👔 رواتب',bill:'💡 فواتير',fuel:'⛽ وقود',purchase:'🛒 مشتريات',other:'📦 أخرى'};
+  const expRows=Object.entries(expBycat).map(([c,v])=>`<div class="rep-row"><div class="rep-label">${cats2[c]||c}</div><div class="rep-val r">${fmt(v)}</div></div>`).join('');
+  const uRows=Object.entries(byU).sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<div class="rep-row"><div class="rep-label">👤 ${n}</div><div class="rep-val g">${fmt(v)}</div></div>`).join('');
+
+  document.getElementById('reportsContent').innerHTML=`
+    <div class="rep-sec"><h3>الملخص المالي الكامل</h3>
+      <div class="rep-row"><div class="rep-label">🛒 إجمالي الشراء</div><div class="rep-val">${fmt(tB)}</div></div>
+      <div class="rep-row"><div class="rep-label">💰 مبيعات القطع</div><div class="rep-val g">${fmt(tS)}</div></div>
+      <div class="rep-row"><div class="rep-label">↩ مُرجَعات القطع</div><div class="rep-val r">${fmt(cars.reduce((s,c)=>s+calcCar(c).returned,0))}</div></div>
+      <div class="rep-row"><div class="rep-label">🔧 مبيعات الورشة</div><div class="rep-val g">${fmt(totFree)}</div></div>
+      <div class="rep-row"><div class="rep-label">🛠️ شغل اليد (ربح)</div><div class="rep-val g">${fmt(tL)}</div></div>
+      <div class="rep-row"><div class="rep-label">📈 الربح قبل المصاريف</div><div class="rep-val ${grossNet>=0?'g':'r'}">${fmt(Math.abs(grossNet))}</div></div>
+      <div class="rep-row"><div class="rep-label">💸 إجمالي المصاريف</div><div class="rep-val r">${fmt(totExp)}</div></div>
+      <div class="rep-row" style="border:2px solid ${netAfterExp>=0?'var(--g)':'var(--r)'}">
+        <div class="rep-label" style="font-weight:800;font-size:14px">${netAfterExp>=0?'📈 صافي الربح':'📉 صافي الخسارة'}</div>
+        <div class="rep-val ${netAfterExp>=0?'g':'r'}" style="font-size:16px">${fmt(Math.abs(netAfterExp))}</div>
+      </div>
+    </div>
+
+    <div class="rep-sec"><h3>📅 الأرباح حسب الفترة</h3>
+      <div class="rep-row"><div class="rep-label">📆 اليوم</div><div class="rep-val ${daily.net>=0?'g':'r'}">${fmt(Math.abs(daily.net))}</div></div>
+      <div class="rep-row"><div class="rep-label">📅 هذا الأسبوع</div><div class="rep-val ${weekly.net>=0?'g':'r'}">${fmt(Math.abs(weekly.net))}</div></div>
+      <div class="rep-row"><div class="rep-label">🗓️ هذا الشهر</div><div class="rep-val ${monthly.net>=0?'g':'r'}">${fmt(Math.abs(monthly.net))}</div></div>
+      <div class="rep-row"><div class="rep-label">📊 هذه السنة</div><div class="rep-val ${yearly.net>=0?'g':'r'}">${fmt(Math.abs(yearly.net))}</div></div>
+      <div class="rep-row"><div class="rep-label">🏆 الإجمالي الكلي</div><div class="rep-val ${netAfterExp>=0?'g':'r'}">${fmt(Math.abs(netAfterExp))}</div></div>
+    </div>
+
+    ${totExp>0?`<div class="rep-sec"><h3>تفصيل المصاريف</h3>${expRows}</div>`:''}
+    <div class="rep-sec"><h3>مبيعات الموظفين</h3>${uRows||'<div style="color:var(--mu);font-size:13px">لا توجد بيانات</div>'}</div>
+    ${best?`<div class="rep-sec"><h3>أفضل سيارة</h3><div class="rep-row"><div class="rep-label">🏆 ${best.model||'#'+best.num}</div><div class="rep-val g">${fmt(bestN)}</div></div></div>`:''}
+    <div class="rep-sec"><h3>إحصائيات</h3>
+      <div class="rep-row"><div class="rep-label">🚗 عدد السيارات</div><div class="rep-val">${cars.length}</div></div>
+      <div class="rep-row"><div class="rep-label">✅ نشطة</div><div class="rep-val g">${cars.filter(c=>!c.done).length}</div></div>
+      <div class="rep-row"><div class="rep-label">🔴 منتهية</div><div class="rep-val r">${cars.filter(c=>c.done).length}</div></div>
+      <div class="rep-row"><div class="rep-label">🔩 إجمالي القطع المباعة</div><div class="rep-val">${cars.reduce((s,c)=>s+c.sales.filter(x=>!x.returned).length,0)}</div></div>
+      <div class="rep-row"><div class="rep-label">↩ قطع مُرجَعة</div><div class="rep-val r">${cars.reduce((s,c)=>s+c.sales.filter(x=>x.returned).length,0)}</div></div>
+      <div class="rep-row"><div class="rep-label">🔧 خدمات الورشة</div><div class="rep-val">${(freeS||[]).length}</div></div>
+    </div>`;
+}
+
+// ── USERS ──
+async function renderUsers(){
+  if(CU.role!=='admin'){document.getElementById('usersContent').innerHTML=`<div class="admin-msg">${T('usersAdminOnly')}</div>`;return;}
+  const{data:accounts}=await sb.from('accounts').select('*').order('created_at');
+  const list=(accounts||[]).map(u=>`<div class="ucard">
+    <div class="uavatar ${u.role}">${u.role==='admin'?'👑':'🔧'}</div>
+    <div class="uinfo">
+      <div class="uname">${u.name}</div>
+      <div class="umeta">
+        <span class="rbadge ${u.role}">${u.role==='admin'?'مشرف':'موظف'}</span>
+        &nbsp; اسم الدخول: <b>${u.username}</b>
+        ${u.id===CU.id?' &nbsp;(أنت)':''}
+      </div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="ibtn g" style="padding:6px 8px;font-size:11px" onclick="editAccount('${u.id}','${u.name}','${u.username}','${u.password}','${u.role}')">✏️</button>
+      ${u.id!==CU.id?`<button class="ibtn r" style="padding:6px 8px;font-size:11px" onclick="delAccount('${u.id}','${u.name}')">🗑</button>`:''}
+    </div>
+  </div>`).join('');
+
+  document.getElementById('usersContent').innerHTML=`
+    <div style="margin-bottom:16px">${list}</div>
+    <div style="font-size:14px;font-weight:800;margin-bottom:10px">➕ إضافة موظف جديد</div>
+    <div class="add-sale">
+      <div class="fgrid">
+        <div class="fgi full"><label>الاسم</label><input type="text" id="new_name" placeholder="اسم الموظف"></div>
+        <div class="fgi"><label>اسم الدخول</label><input type="text" id="new_user" placeholder="مثال: ali123" dir="ltr"></div>
+        <div class="fgi"><label>كلمة المرور</label><input type="text" id="new_pass" placeholder="مثال: 1234" dir="ltr"></div>
+        <div class="fgi"><label>الصلاحية</label>
+          <select id="new_role">
+            <option value="staff">موظف</option>
+            <option value="admin">مشرف</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" style="margin-bottom:0" onclick="addAccount()">✓ إضافة</button>
+    </div>`;
+}
+
+async function addAccount(){
+  const name=val('new_name').trim();
+  const username=val('new_user').trim();
+  const password=val('new_pass').trim();
+  const role=document.getElementById('new_role').value;
+  if(!name||!username||!password){toast(T('fillAll'));return;}
+  const{error}=await sb.from('accounts').insert({name,username,password,role});
+  if(error){toast('خطأ: '+error.message);return;}
+  toast(T('addStaffOk'));renderUsers();
+}
+
+async function delAccount(id,name){
+  if(!confirm(`حذف حساب ${name}؟`))return;
+  await sb.from('accounts').delete().eq('id',id);
+  toast(T('delOk'));renderUsers();
+}
+
+function editAccount(id,name,username,password,role){
+  modal(`<h2>✏️ تعديل الحساب</h2>
+    <div class="fg"><label>الاسم</label><input id="e_name" type="text" value="${name}"></div>
+    <div class="fg"><label>اسم الدخول</label><input id="e_user" type="text" value="${username}" dir="ltr"></div>
+    <div class="fg"><label>كلمة المرور</label><input id="e_pass" type="text" value="${password}" dir="ltr"></div>
+    <div class="fg"><label>الصلاحية</label>
+      <select id="e_role">
+        <option value="staff" ${role==='staff'?'selected':''}>موظف</option>
+        <option value="admin" ${role==='admin'?'selected':''}>مشرف</option>
+      </select>
+    </div>
+    <div class="macts">
+      <button class="btn" style="margin-bottom:0" onclick="saveEditAccount('${id}')">✓ حفظ</button>
+      <button class="btn sec" style="margin-bottom:0" onclick="closeModal()">${T('cancel')}</button>
+    </div>`);
+}
+
+async function saveEditAccount(id){
+  const name=val('e_name').trim();
+  const username=val('e_user').trim();
+  const password=val('e_pass').trim();
+  const role=document.getElementById('e_role').value;
+  if(!name||!username||!password){toast(T('fillAll'));return;}
+  const{error}=await sb.from('accounts').update({name,username,password,role}).eq('id',id);
+  if(error){toast('خطأ: '+error.message);return;}
+  // update local session if editing own account
+  if(CU.id===id){
+    CU={...CU,name,username,role};
+    localStorage.setItem('alburj_session',JSON.stringify(CU));
+    document.getElementById('hName').textContent=name;
+    document.getElementById('hRole').textContent=role==='admin'?'👑 مشرف':'🔧 موظف';
+  }
+  closeModal();toast(T('editOk'));renderUsers();
+}
+
+// ── EXPENSES ──
+async function renderExpenses(){
+  if(CU.role!=='admin'){document.getElementById('expensesContent').innerHTML=`<div class="admin-msg">${T('expensesAdminOnly')}</div>`;return;}
+  const{data:exps}=await sb.from('expenses').select('*').order('expense_date',{ascending:false});
+  const list=exps||[];
+  const total=list.reduce((s,x)=>s+Number(x.amount||0),0);
+
+  const cats={salary:'👔 رواتب',bill:'💡 فواتير',fuel:'⛽ وقود/ديزل',purchase:'🛒 مشتريات',other:'📦 أخرى'};
+
+  const rows=list.length?list.map(x=>`
+    <div class="rep-row">
+      <div>
+        <div class="rep-label">${cats[x.category]||x.category} — ${x.description}</div>
+        <div style="font-size:11px;color:var(--mu)">${new Date(x.expense_date).toLocaleDateString('ar-SA')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="rep-val r">${fmt(x.amount)}</div>
+        <button class="ibtn r" style="padding:4px 8px;font-size:11px" onclick="delExpense('${x.id}')">🗑</button>
+      </div>
+    </div>`).join(''):`<div style="color:var(--mu);font-size:13px;text-align:center;padding:20px">لا توجد مصاريف مسجلة</div>`;
+
+  document.getElementById('expensesContent').innerHTML=`
+    <div class="rep-row" style="background:var(--rl);border-color:var(--r);margin-bottom:16px">
+      <div class="rep-label" style="font-weight:800">💸 إجمالي المصاريف</div>
+      <div class="rep-val r">${fmt(total)}</div>
+    </div>
+
+    <div class="add-sale" style="margin-bottom:16px">
+      <div class="add-sale-title">➕ إضافة مصروف جديد</div>
+      <div class="fgrid">
+        <div class="fgi"><label>النوع</label>
+          <select id="exp_cat">
+            <option value="salary">👔 راتب</option>
+            <option value="bill">💡 فاتورة</option>
+            <option value="fuel">⛽ وقود/ديزل</option>
+            <option value="purchase">🛒 مشتريات</option>
+            <option value="other">📦 أخرى</option>
+          </select>
+        </div>
+        <div class="fgi"><label>المبلغ (ر.س)</label><input type="number" id="exp_amount" placeholder="0" min="0" inputmode="numeric"></div>
+        <div class="fgi full"><label>الوصف</label><input type="text" id="exp_desc" placeholder="مثال: راتب محمد، فاتورة كهرباء..."></div>
+      </div>
+      <button class="btn" style="margin-bottom:0" onclick="addExpense()">✓ إضافة المصروف</button>
+    </div>
+
+    <div class="rep-sec"><h3>سجل المصاريف</h3>${rows}</div>`;
+}
+
+async function addExpense(){
+  const category=document.getElementById('exp_cat').value;
+  const amount=parseFloat(document.getElementById('exp_amount').value)||0;
+  const description=val('exp_desc').trim();
+  if(!amount||!description){toast(T('fillAll'));return;}
+  const{error}=await sb.from('expenses').insert({category,amount,description,added_by:CU.name,expense_date:new Date().toISOString()});
+  if(error){toast('خطأ: '+error.message);return;}
+  toast(T('expOk'));renderExpenses();
+}
+
+async function delExpense(id){
+  if(!confirm(T('delExpConfirm')))return;
+  await sb.from('expenses').delete().eq('id',id);
+  toast(T('delOk'));renderExpenses();
+}
+
+
+function nav(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('p'+page).classList.add('on');
+  el.classList.add('on');
+  const fab=document.getElementById('fabBtn');
+  if(page==='Home'){fab.classList.remove('hidden');}
+  else{fab.classList.add('hidden');}
+  if(page==='Warranty')renderWarranty();
+  if(page==='Reports')renderReports();
+  if(page==='Users')renderUsers();
+  if(page==='Expenses')renderExpenses();
+  if(page==='FreeSales')renderFreeSales();
+}
+
+// ── FREE SALES (ورشة) ──
+async function renderFreeSales(){
+  const{data:fs}=await sb.from('free_sales').select('*').order('sale_date',{ascending:false});
+  const list=fs||[];
+  const total=list.reduce((s,x)=>s+Number(x.price||0),0);
+  const cats={mechanic:'🔧 ميكانيكا',electric:'⚡ كهرباء',ac:'❄️ تكييف',body:'🔨 هيكل',other:'📦 أخرى'};
+
+  const rows=list.length?list.map(x=>`
+    <div class="rep-row">
+      <div>
+        <div class="rep-label">${cats[x.category]||x.category} — ${x.description}</div>
+        <div style="font-size:11px;color:var(--mu)">
+          📅 ${new Date(x.sale_date).toLocaleDateString('ar-SA')}
+          ${x.technician?' | 🛠️ '+x.technician:''}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="rep-val g">${fmt(x.price)}</div>
+        ${CU.role==='admin'?`<button class="ibtn r" style="padding:4px 8px;font-size:11px" onclick="delFreeSale('${x.id}')">🗑</button>`:''}
+      </div>
+    </div>`).join(''):`<div style="color:var(--mu);font-size:13px;text-align:center;padding:20px">لا توجد مبيعات</div>`;
+
+  document.getElementById('freeSalesContent').innerHTML=`
+    <div class="rep-row" style="background:var(--gl);border-color:var(--g);margin-bottom:16px">
+      <div class="rep-label" style="font-weight:800">💰 إجمالي مبيعات الورشة</div>
+      <div class="rep-val g">${fmt(total)}</div>
+    </div>
+    <div class="add-sale" style="margin-bottom:16px">
+      <div class="add-sale-title">➕ تسجيل خدمة جديدة</div>
+      <div class="fgrid">
+        <div class="fgi"><label>النوع</label>
+          <select id="fs_cat">
+            <option value="mechanic">🔧 ميكانيكا</option>
+            <option value="electric">⚡ كهرباء</option>
+            <option value="ac">❄️ تكييف</option>
+            <option value="body">🔨 هيكل</option>
+            <option value="other">📦 أخرى</option>
+          </select>
+        </div>
+        <div class="fgi"><label>المبلغ (ر.س)</label><input type="number" id="fs_price" placeholder="0" min="0" inputmode="numeric"></div>
+        <div class="fgi full"><label>الوصف</label><input type="text" id="fs_desc" placeholder="مثال: تغيير زيت، فحص كهرباء..."></div>
+        <div class="fgi full"><label>الفني</label>
+          <select id="fs_tech">
+            <option value="">-- اختر الفني --</option>
+            ${(window._accounts||[]).map(a=>`<option value="${a.name}">${a.name}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <button class="btn" style="margin-bottom:0" onclick="addFreeSale()">✓ تسجيل الخدمة</button>
+    </div>
+    <div class="rep-sec"><h3>سجل خدمات الورشة</h3>${rows}</div>`;
+}
+
+async function addFreeSale(){
+  const category=document.getElementById('fs_cat').value;
+  const price=parseFloat(document.getElementById('fs_price').value)||0;
+  const description=val('fs_desc').trim();
+  const technician=document.getElementById('fs_tech').value;
+  if(!price||!description){toast(T('fillFields'));return;}
+  const{error}=await sb.from('free_sales').insert({category,price,description,technician,sold_by:CU.name,sale_date:new Date().toISOString()});
+  if(error){toast('خطأ: '+error.message);return;}
+  toast(T('freeOk'));renderFreeSales();
+}
+
+async function delFreeSale(id){
+  if(CU.role!=='admin'){toast(T('adminOnly'));return;}
+  if(!confirm(T('delFreeConfirm')))return;
+  await sb.from('free_sales').delete().eq('id',id);
+  toast(T('delOk'));renderFreeSales();
+}
+
+// ── فاتورة مرتجع ──
+function exportReturnPDF(carId,saleId,reason){
+  const car=cars.find(c=>c.id===carId);if(!car)return;
+  const s=car.sales.find(x=>x.id===saleId);if(!s)return;
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  const W=210;
+  const now=new Date();
+  const dateStr=now.getDate()+'/'+(now.getMonth()+1)+'/'+now.getFullYear();
+
+  function aImg(text,fontSize,color,bold,width){
+    const w=width||500;
+    const c=document.createElement('canvas');
+    const scale=4;
+    c.width=w*scale;c.height=(fontSize+10)*scale;
+    const ctx=c.getContext('2d');
+    ctx.scale(scale,scale);
+    ctx.font=(bold?'bold ':'')+fontSize+'px Cairo, Arial';
+    ctx.fillStyle=color||'#0f172a';
+    ctx.textAlign='right';
+    ctx.fillText(text,w-2,fontSize+1);
+    return c.toDataURL('image/png');
+  }
+
+  // هيدر أحمر
+  doc.setFillColor(180,20,20); doc.rect(0,0,W,50,'F');
+  doc.setFillColor(220,38,38); doc.rect(0,25,W,25,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(20);doc.setFont('helvetica','bold');
+  doc.text('TASHLEEH AL-BURJ',14,13);
+
+  const shopAr=aImg('تشليح البرج',20,'#ffffff',true,400);
+  doc.addImage(shopAr,'PNG',W-100,2,86,11);
+
+  doc.setFontSize(8.5);doc.setFont('helvetica','normal');
+  doc.text('Al-Qassim Region - Al-Rass',14,19);
+  doc.text('Date: '+dateStr,14,28);
+
+  const retTitle=aImg('فاتورة مرتجع',14,'#ffffff',true,300);
+  doc.addImage(retTitle,'PNG',14,34,80,8);
+
+  let y=58;
+
+  // تفاصيل
+  doc.setFillColor(220,38,38); doc.rect(14,y,W-28,8,'F');
+  const sec=aImg('تفاصيل المرتجع',10,'#ffffff',true,300);
+  doc.addImage(sec,'PNG',W-100,y+1,86,5);
+  y+=10;
+
+  const fields=[
+    ['اسم القطعة',s.part_name||'قطعة'],
+    ['سعر البيع الأصلي',Number(s.price).toLocaleString()+' ر.س'],
+    ['سبب الإرجاع',reason],
+    ['تاريخ الإرجاع',dateStr],
+    ['أرجعه',CU.name],
+  ];
+
+  fields.forEach(([lbl,val2],i)=>{
+    doc.setFillColor(i%2===0?255:250,i%2===0?245:245,i%2===0?245:245);
+    doc.rect(14,y,W-28,10,'F');
+    doc.setDrawColor(220,200,200);doc.setLineWidth(.2);doc.line(14,y+10,W-14,y+10);
+    const li=aImg(': '+lbl,9,'#991b1b',true,200);
+    doc.addImage(li,'PNG',W-82,y+1.5,68,5.5);
+    const vi=aImg(String(val2),10,'#0f172a',true,200);
+    doc.addImage(vi,'PNG',14,y+1.5,80,5.5);
+    y+=10;
+  });
+  y+=8;
+
+  // السيارة
+  doc.setFillColor(220,38,38);doc.rect(14,y,W-28,8,'F');
+  const carSec=aImg('السيارة المرجعية',10,'#ffffff',true,300);
+  doc.addImage(carSec,'PNG',W-100,y+1,86,5);y+=10;
+  doc.setFillColor(255,245,245);doc.rect(14,y,W-28,12,'F');
+  const ci=aImg('#'+car.num+' — '+(car.model||'غير محدد'),11,'#991b1b',true,400);
+  doc.addImage(ci,'PNG',W-110,y+2,96,7);y+=18;
+
+  // فوتر
+  const pH=doc.internal.pageSize.height;
+  doc.setFillColor(180,20,20);doc.rect(0,pH-14,W,14,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
+  doc.text('TASHLEEH AL-BURJ | Al-Qassim - Al-Rass',14,pH-8);
+  const fAr=aImg('شكراً لتعاملكم معنا',9,'rgba(255,255,255,0.8)',false,300);
+  doc.addImage(fAr,'PNG',W-95,pH-13,80,6);
+
+  doc.save('مرتجع_'+car.num+'.pdf');
+  toast('تم إصدار فاتورة المرتجع ✅');
+}
+
+
+const SH={nameEn:'Tashleeh Al-Burj',addr1:'Al-Qassim Region — Al-Rass',addr2:'منطقة القصيم — الرس',G:[22,163,74],GD:[20,83,45],GR:[220,38,38],MU:[100,116,139],TK:[15,23,42],WH:[255,255,255]};
+
+function pH(doc,W,sub,inv){
+  doc.setFillColor(...SH.GD);doc.rect(0,0,W,18,'F');
+  doc.setFillColor(...SH.G);doc.rect(0,18,W,26,'F');
+  doc.setTextColor(...SH.WH);doc.setFontSize(20);doc.setFont('helvetica','bold');doc.text(SH.nameEn,14,13);
+  if(inv){doc.setFillColor(...SH.WH);doc.roundedRect(W-58,3,44,12,2,2,'F');doc.setTextColor(...SH.GD);doc.setFontSize(7);doc.setFont('helvetica','bold');doc.text('INV NO.',W-56,8);doc.setFontSize(9);doc.text(inv,W-56,13);}
+  doc.setTextColor(...SH.WH);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text(sub,14,27);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text(SH.addr1+'   |   '+SH.addr2,14,34);
+  doc.text('Date: '+new Date().toLocaleDateString('en-GB'),14,41);
+  return 52;
+}
+
+function pF(doc,W){
+  const H=doc.internal.pageSize.height;
+  doc.setFillColor(...SH.GD);doc.rect(0,H-14,W,14,'F');
+  doc.setTextColor(...SH.WH);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+  doc.text(SH.nameEn+'  |  '+SH.addr1+'  |  '+SH.addr2,W/2,H-8,{align:'center'});
+  doc.setFont('helvetica','normal');doc.setFontSize(7);
+  doc.text('Thank you for choosing Tashleeh Al-Burj',W/2,H-3,{align:'center'});
+}
+
+function pST(doc,txt,x,y,w){
+  doc.setFillColor(...SH.G);doc.rect(x,y,w,8,'F');
+  doc.setTextColor(...SH.WH);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text(txt,x+4,y+5.5);return y+8;
+}
+
+// ── PDF CAR ──
+function exportCarPDF(carId){
+  const car=cars.find(c=>c.id===carId);if(!car)return;
+  const{sales,labor,net}=calcCar(car);
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  const W=210;
+
+  // ── هيدر ──
+  doc.setFillColor(...SH.GD);doc.rect(0,0,W,20,'F');
+  doc.setFillColor(...SH.G);doc.rect(0,20,W,22,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(18);doc.setFont('helvetica','bold');
+  doc.text('Tashleeh Al-Burj',14,14);
+  doc.setFontSize(12);doc.text('Car Report  |  CAR-'+car.num,14,29);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Al-Qassim - Al-Rass',14,38);
+  doc.text(new Date().toLocaleDateString('en-GB'),W-14,38,{align:'right'});
+  let y=50;
+
+  // ── بيانات السيارة ──
+  doc.setFillColor(245,255,250);doc.roundedRect(14,y,W-28,32,3,3,'F');
+  doc.setDrawColor(...SH.G);doc.setLineWidth(.5);doc.roundedRect(14,y,W-28,32,3,3,'D');
+  const carInfo=[
+    ['Car No.',  '#'+car.num],
+    ['Model',    car.model||'-'],
+    ['Buy Price',Number(car.buy_price||0).toLocaleString()+' SAR'],
+    ['Date',     new Date(car.created_at).toLocaleDateString('en-GB')]
+  ];
+  carInfo.forEach(([lb,vl],i)=>{
+    const ry=y+8+(i*6);
+    doc.setFontSize(8);doc.setTextColor(...SH.MU);doc.setFont('helvetica','normal');
+    doc.text(lb+':',18,ry);
+    doc.setTextColor(...SH.TK);doc.setFont('helvetica','bold');
+    doc.text(String(vl),75,ry);
+  });
+  if(car.notes){
+    y+=34;
+    doc.setFontSize(8);doc.setTextColor(...SH.MU);doc.setFont('helvetica','normal');
+    doc.text('Notes: '+String(car.notes).substring(0,80),18,y);
+    y+=7;
+  } else {y+=36;}
+
+  // ── جدول القطع ──
+  const activeSales=car.sales.filter(s=>!s.returned);
+  const returnedSales=car.sales.filter(s=>s.returned);
+
+  // عنوان القسم
+  doc.setFillColor(...SH.G);doc.rect(14,y,W-28,8,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(9);doc.setFont('helvetica','bold');
+  doc.text('Parts Sold ('+activeSales.length+')',18,y+5.5);
+  y+=8;
+
+  // رؤوس الجدول
+  doc.setFillColor(240,253,244);doc.rect(14,y,W-28,7,'F');
+  doc.setTextColor(...SH.GD);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+  doc.text('No.',18,y+5);
+  doc.text('Part Name',28,y+5);
+  doc.text('Date',85,y+5);
+  doc.text('Sold By',115,y+5);
+  doc.text('Warranty',143,y+5);
+  doc.text('Labor',163,y+5);
+  doc.text('Price',W-14,y+5,{align:'right'});
+  doc.setDrawColor(...SH.G);doc.setLineWidth(.3);doc.line(14,y+7,W-14,y+7);
+  y+=7;
+
+  if(!activeSales.length){
+    doc.setTextColor(...SH.MU);doc.setFontSize(9);doc.setFont('helvetica','normal');
+    doc.text('No parts recorded.',18,y+8);y+=14;
+  } else {
+    activeSales.forEach((s,i)=>{
+      if(y>258){pF(doc,W);doc.addPage();y=18;}
+      const bg=i%2===0?[255,255,255]:[248,255,250];
+      doc.setFillColor(...bg);doc.rect(14,y,W-28,8,'F');
+      doc.setTextColor(...SH.TK);doc.setFontSize(8);doc.setFont('helvetica','normal');
+      doc.text(String(i+1),18,y+5.5);
+      doc.setFont('helvetica','bold');
+      doc.text(String(s.part_name||'Part').substring(0,22),28,y+5.5);
+      doc.setFont('helvetica','normal');
+      doc.text(new Date(s.sale_date).toLocaleDateString('en-GB'),85,y+5.5);
+      doc.text(String(s.sold_by||'-').substring(0,12),115,y+5.5);
+      const ws=wStatus(s);
+      if(ws.cls==='wa')doc.setTextColor(...SH.G);
+      else if(ws.cls==='we')doc.setTextColor(...SH.GR);
+      else doc.setTextColor(...SH.MU);
+      doc.setFont('helvetica','bold');
+      doc.text(s.warranty_days>0?s.warranty_days+'d':'--',143,y+5.5);
+      doc.setTextColor(...SH.MU);doc.setFont('helvetica','normal');
+      doc.text(Number(s.labor||0).toLocaleString(),163,y+5.5);
+      doc.setTextColor(...SH.G);doc.setFont('helvetica','bold');
+      doc.text(Number(s.price||0).toLocaleString()+' SAR',W-14,y+5.5,{align:'right'});
+      doc.setDrawColor(225,240,225);doc.setLineWidth(.2);doc.line(14,y+8,W-14,y+8);
+      y+=8;
+    });
+  }
+
+  // ── المرتجعات ──
+  if(returnedSales.length){
+    y+=5;
+    doc.setFillColor(...SH.GR);doc.rect(14,y,W-28,8,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(9);doc.setFont('helvetica','bold');
+    doc.text('Returned Parts ('+returnedSales.length+')',18,y+5.5);
+    y+=8;
+    returnedSales.forEach((s,i)=>{
+      if(y>258){pF(doc,W);doc.addPage();y=18;}
+      doc.setFillColor(255,248,248);doc.rect(14,y,W-28,8,'F');
+      doc.setTextColor(...SH.GR);doc.setFontSize(8);doc.setFont('helvetica','bold');
+      doc.text(String(s.part_name||'Part').substring(0,30),18,y+5.5);
+      doc.setTextColor(...SH.MU);doc.setFont('helvetica','normal');
+      doc.text(new Date(s.sale_date).toLocaleDateString('en-GB'),105,y+5.5);
+      doc.setFontSize(7.5);doc.text('Labor kept: '+Number(s.labor||0).toLocaleString()+' SAR',140,y+5.5);
+      doc.setTextColor(...SH.GR);doc.setFont('helvetica','bold');
+      doc.text('-'+Number(s.price||0).toLocaleString()+' SAR',W-14,y+5.5,{align:'right'});
+      doc.setDrawColor(255,200,200);doc.setLineWidth(.2);doc.line(14,y+8,W-14,y+8);
+      y+=8;
+    });
+  }
+
+  // ── الملخص المالي ──
+  y+=8;
+  doc.setDrawColor(...SH.G);doc.setLineWidth(.5);doc.line(14,y,W-14,y);
+  y+=8;
+
+  const retLabor=returnedSales.reduce((a,x)=>a+Number(x.labor||0),0);
+  const summary=[
+    ['Parts Sales (excl. returned)', sales, SH.G, false],
+    ['Labor Income (incl. returned)', labor, SH.G, false],
+    ['Purchase Cost', Number(car.buy_price||0), SH.GR, true],
+  ];
+  summary.forEach(([lb,vl,clr,minus])=>{
+    if(y>268){pF(doc,W);doc.addPage();y=18;}
+    doc.setFontSize(10);doc.setTextColor(...SH.MU);doc.setFont('helvetica','normal');
+    doc.text(lb+':',18,y);
+    doc.setTextColor(...clr);doc.setFont('helvetica','bold');
+    doc.text((minus?'- ':'')+Number(vl).toLocaleString()+' SAR',W-14,y,{align:'right'});
+    y+=8;
+  });
+
+  // صافي الربح
+  y+=2;
+  doc.setFillColor(...(net>=0?SH.G:SH.GR));
+  doc.roundedRect(14,y,W-28,13,3,3,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(12);doc.setFont('helvetica','bold');
+  doc.text((net>=0?'Net Profit: ':'Net Loss: ')+Math.abs(net).toLocaleString()+' SAR',W/2,y+8.5,{align:'center'});
+
+  pF(doc,W);
+  doc.save('Car_'+car.num+'.pdf');
+  toast(T('pdfOk'));
+}
+
+// ── PDF SALE ──
+function exportSalePDF(carId,saleId){
+  const car=cars.find(c=>c.id===carId);if(!car)return;
+  const s=car.sales.find(x=>x.id===saleId);if(!s)return;
+  const ws=wStatus(s);
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  const W=210;
+  const idx=car.sales.indexOf(s);
+  const invNum=car.num+'-'+String(idx+1).padStart(3,'0');
+  const now=new Date();
+  const dateStr=now.getDate()+'/'+(now.getMonth()+1)+'/'+now.getFullYear();
+  const saleD=new Date(s.sale_date);
+  const saleDateStr=saleD.getDate()+'/'+(saleD.getMonth()+1)+'/'+saleD.getFullYear();
+
+  // ── رسم النص العربي على canvas ──
+  function aImg(text, fontSize, color, bold, width){
+    const w=width||500;
+    const c=document.createElement('canvas');
+    const scale=4;
+    c.width=w*scale; c.height=(fontSize+10)*scale;
+    const ctx=c.getContext('2d');
+    ctx.scale(scale,scale);
+    ctx.font=(bold?'bold ':'')+fontSize+'px Cairo, Arial';
+    ctx.fillStyle=color||'#0f172a';
+    ctx.textAlign='right';
+    ctx.fillText(text,w-2,fontSize+1);
+    return c.toDataURL('image/png');
+  }
+
+  // ── هيدر أخضر كامل ──
+  doc.setFillColor(...SH.GD); doc.rect(0,0,W,50,'F');
+  doc.setFillColor(...SH.G);  doc.rect(0,25,W,25,'F');
+
+  // اسم التشليح بالعربي
+  const shopAr=aImg('تشليح البرج',22,'#ffffff',true,400);
+  doc.addImage(shopAr,'PNG',W-100,2,86,12);
+
+  // اسم التشليح بالإنجليزي
+  doc.setTextColor(...SH.WH); doc.setFontSize(11); doc.setFont('helvetica','bold');
+  doc.text('TASHLEEH AL-BURJ',14,10);
+
+  // العنوان
+  const addrAr=aImg('منطقة القصيم — الرس',11,'rgba(255,255,255,0.85)',false,400);
+  doc.addImage(addrAr,'PNG',W-100,14,86,7);
+  doc.setFontSize(8.5); doc.setFont('helvetica','normal'); doc.setTextColor(...SH.WH);
+  doc.text('Al-Qassim Region - Al-Rass',14,19);
+
+  // التاريخ ورقم الفاتورة
+  const dateAr=aImg('التاريخ: '+dateStr,10,'rgba(255,255,255,0.8)',false,300);
+  doc.addImage(dateAr,'PNG',W-80,23,66,6);
+  doc.setFontSize(8); doc.setTextColor(...SH.WH);
+  doc.text('Date: '+dateStr,14,28);
+
+  // بادج رقم الفاتورة
+  doc.setFillColor(255,255,255);
+  doc.roundedRect(W-68,32,54,12,2,2,'F');
+  doc.setTextColor(...SH.GD); doc.setFontSize(7); doc.setFont('helvetica','bold');
+  doc.text('INVOICE NO.',W-66,38);
+  doc.setFontSize(10); doc.text('INV-'+invNum,W-66,44);
+
+  // عنوان "فاتورة قطعة" بالعربي
+  const invTitle=aImg('فاتورة قطعة',13,'#ffffff',true,300);
+  doc.addImage(invTitle,'PNG',14,34,66,8);
+
+  let y=58;
+
+  // ── تفاصيل القطعة ──
+  // عنوان القسم
+  doc.setFillColor(...SH.G); doc.rect(14,y,W-28,8,'F');
+  const secTitle=aImg('تفاصيل القطعة',10,'#ffffff',true,300);
+  doc.addImage(secTitle,'PNG',W-100,y+1,86,5);
+  y+=10;
+
+  const fields=[
+    ['اسم القطعة', s.part_name||'قطعة', true],
+    ['سعر البيع',  Number(s.price).toLocaleString()+' ر.س', true],
+    ['شغل اليد',   Number(s.labor||0).toLocaleString()+' ر.س', false],
+    ['الفني',      s.technician||'-', false],
+    ['تاريخ البيع', saleDateStr, false],
+  ];
+
+  fields.forEach(([lbl,val,hi],i)=>{
+    doc.setFillColor(i%2===0?245:250, i%2===0?255:252, i%2===0?245:248);
+    doc.rect(14,y,W-28,10,'F');
+    doc.setDrawColor(220,240,220); doc.setLineWidth(.2);
+    doc.line(14,y+10,W-14,y+10);
+    // التسمية — يمين
+    const lblImg=aImg(': '+lbl,9,'#64748b',true,200);
+    doc.addImage(lblImg,'PNG',W-82,y+1.5,68,5.5);
+    // القيمة — يسار
+    const valImg=aImg(String(val),10,hi?'#15803d':'#0f172a',true,180);
+    doc.addImage(valImg,'PNG',14,y+1.5,72,5.5);
+    y+=10;
+  });
+  y+=8;
+
+  // ── الضمان ──
+  const wc=ws.cls==='wa'?SH.G:ws.cls==='we'?SH.GR:SH.MU;
+  const wH=ws.expiry?20:16;
+  doc.setFillColor(...wc); doc.roundedRect(14,y,W-28,wH,3,3,'F');
+
+  const wTitleImg=aImg('حالة الضمان',9,'#ffffff',true,200);
+  doc.addImage(wTitleImg,'PNG',W-82,y+3,68,5);
+  const wValImg=aImg(ws.label,11,'#ffffff',true,200);
+  doc.addImage(wValImg,'PNG',14,y+3,80,6);
+
+  if(ws.expiry){
+    const expD=ws.expiry;
+    const expStr=(ws.cls==='wa'?'ينتهي: ':'انتهى: ')+expD.getDate()+'/'+(expD.getMonth()+1)+'/'+expD.getFullYear();
+    const expImg=aImg(expStr,8,'rgba(255,255,255,0.85)',false,300);
+    doc.addImage(expImg,'PNG',W-120,y+12,106,5);
+  }
+  y+=wH+8;
+
+  // ── السيارة المرجعية ──
+  doc.setFillColor(...SH.G); doc.rect(14,y,W-28,8,'F');
+  const carSecTitle=aImg('السيارة المرجعية',10,'#ffffff',true,300);
+  doc.addImage(carSecTitle,'PNG',W-100,y+1,86,5);
+  y+=10;
+
+  doc.setFillColor(245,255,245); doc.rect(14,y,W-28,12,'F');
+  doc.setDrawColor(...SH.G); doc.setLineWidth(.3);
+  doc.roundedRect(14,y,W-28,12,1,1,'D');
+  const carInfo=aImg('#'+car.num+' — '+(car.model||'غير محدد'),11,'#14532d',true,400);
+  doc.addImage(carInfo,'PNG',W-110,y+2,96,7);
+  y+=18;
+
+  // ── الشروط ──
+  doc.setDrawColor(200,235,210); doc.setLineWidth(.3);
+  doc.roundedRect(14,y,W-28,16,2,2,'D');
+  const t1=aImg('الفاتورة صادرة من تشليح البرج — منطقة القصيم، الرس *',8,'#64748b',false,500);
+  const t2=aImg('الضمان يبدأ من تاريخ البيع. لا يقبل الإرجاع بعد انتهاء الضمان *',8,'#64748b',false,500);
+  doc.addImage(t1,'PNG',14,y+2,182,5);
+  doc.addImage(t2,'PNG',14,y+9,182,5);
+
+  // ── فوتر ──
+  const pH2=doc.internal.pageSize.height;
+  doc.setFillColor(...SH.GD); doc.rect(0,pH2-16,W,16,'F');
+  const footAr=aImg('شكراً لاختيارك تشليح البرج',9,'rgba(255,255,255,0.8)',false,400);
+  doc.addImage(footAr,'PNG',W-100,pH2-13,86,6);
+  doc.setTextColor(...SH.WH); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('TASHLEEH AL-BURJ  |  Al-Qassim - Al-Rass',14,pH2-9);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7);
+  doc.text('Thank you for choosing Tashleeh Al-Burj',14,pH2-4);
+
+  doc.save('فاتورة_'+invNum+'.pdf');
+  toast(T('pdfOk'));
+}
+
+// ── UTILS ──
+function show(id){const el=document.getElementById(id);if(el){el.style.display='';el.classList.add('on');}}
+function hide(id){const el=document.getElementById(id);if(el)el.classList.remove('on');}
+function hideLd(){const el=document.getElementById('loading');if(el)el.style.display='none';}
+function val(id){return document.getElementById(id)?.value||'';}
+function showStep(id){document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));document.getElementById(id)?.classList.add('on');}
+function modal(html){document.getElementById('modalWrap').innerHTML=`<div class="overlay" onclick="if(event.target.classList.contains('overlay'))closeModal()"><div class="modal"><div class="mhandle"></div>${html}</div></div>`;}
+function closeModal(){document.getElementById('modalWrap').innerHTML='';}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.getElementById('toastWrap').appendChild(t);setTimeout(()=>t.remove(),2800);}
+
+init();
+</script>
+</body>
+</html>
